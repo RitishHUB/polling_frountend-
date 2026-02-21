@@ -4,7 +4,8 @@ import Login from "./pages/Login";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import Student from "./pages/Student";
-import Staff from "./pages/Staff";
+import Staff from "./pages/Staff.jsx";
+
 
 function App() {
   return (
