@@ -1,0 +1,94 @@
+Page background & center alignment
+.register-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f3f7ff;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* White card */
+.register-box {
+  background: #ffffff;
+  padding: 35px;
+  width: 360px;
+  border-radius: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+/* Logo circle */
+.logo {
+  width: 60px;
+  height: 60px;
+  background: #2563eb;
+  border-radius: 50%;
+  margin: 0 auto 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-size: 24px;
+}
+
+/* Heading */
+.register-box h2 {
+  margin-bottom: 5px;
+}
+
+/* Subtitle */
+.register-box p {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/* Inputs & select */
+.register-box input,
+.register-box select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  outline: none;
+}
+
+/* Focus effect */
+.register-box input:focus,
+.register-box select:focus {
+  border-color: #2563eb;
+}
+
+/* Button */
+.register-box button {
+  width: 100%;
+  padding: 10px;
+  background: #2563eb;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Button hover */
+.register-box button:hover {
+  background: #1e4fd8;
+}
+.register-footer {
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.register-footer a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.register-footer a:hover {
+  text-decoration: underline;
+}
