@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import Student from "./pages/Student";
-import Staff from "./pages/Staff.jsx";
+import Staff from "./pages/staff.jsx";
 
 
 function App() {
@@ -14,7 +14,7 @@ function App() {
         {/* LOGIN ROUTE */}
         <Route path="/" element={<Login />} />
 
-        
+
         {/* ADMIN ROUTE */}
         <Route path="/admin" element={<AdminDashboard />} />
 

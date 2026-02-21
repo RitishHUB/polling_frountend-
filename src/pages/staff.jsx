@@ -3,7 +3,7 @@ import { AuthContext } from "../context/AuthContext";
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import "./Staff.css";
+import "./staff.css";
 
 const Staff = () => {
   const { user, logout } = useContext(AuthContext);
