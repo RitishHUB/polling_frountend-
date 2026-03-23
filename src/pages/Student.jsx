@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { CheckCircle, Award, BarChart3, LogOut } from "lucide-react";
+import { CheckCircle, Award, BarChart3, LogOut, Bot, Zap } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
@@ -20,6 +20,10 @@ const Student = () => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editFormData, setEditFormData] = useState({ rollNumber: "", department: "", profilePic: "" });
+
+  // ML Recommendations
+  const [recommendations, setRecommendations] = useState([]);
+  const [recsLoading, setRecsLoading] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -47,6 +51,18 @@ const Student = () => {
     }
   };
 
+  const fetchRecommendations = async () => {
+    try {
+      setRecsLoading(true);
+      const res = await api.get('/polls/recommendations');
+      setRecommendations(res.data);
+    } catch (err) {
+      console.error("Recommendations error:", err);
+    } finally {
+      setRecsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!user) {
       navigate("/");
@@ -54,6 +70,12 @@ const Student = () => {
       fetchData();
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (activeTab === 'ai-picks' && recommendations.length === 0 && !recsLoading) {
+      fetchRecommendations();
+    }
+  }, [activeTab]);
 
   const handleVote = async (pollId, optionIndex) => {
     const hasVoted = votedPolls.some(v => v.pollId?._id === pollId || v.pollId === pollId);
@@ -73,6 +95,8 @@ const Student = () => {
       }
 
       await fetchData();
+      // Refresh recommendations too
+      if (activeTab === 'ai-picks') fetchRecommendations();
     } catch (err) {
       alert(err.response?.data?.message || "Error casting vote");
     } finally {
@@ -212,6 +236,7 @@ const Student = () => {
           <TabButton label="Active Polls" active={activeTab === "polls"} onClick={() => setActiveTab("polls")} />
           <TabButton label="Voting History" active={activeTab === "history"} onClick={() => setActiveTab("history")} />
           <TabButton label="My Badges" active={activeTab === "badges"} onClick={() => setActiveTab("badges")} />
+          <TabButton label="🤖 AI Picks" active={activeTab === "ai-picks"} onClick={() => setActiveTab("ai-picks")} isSpecial={true} />
         </div>
 
         {/* Content */}
@@ -302,6 +327,92 @@ const Student = () => {
               )}
             </div>
           )}
+
+          {/* AI PICKS TAB */}
+          {activeTab === "ai-picks" && (
+            <div className="ai-picks-section">
+              <div className="ai-picks-header">
+                <div className="ai-picks-title">
+                  <Bot size={22} className="ai-bot-icon" />
+                  <div>
+                    <h3>Smart Recommendations</h3>
+                    <p>ML-powered picks based on your voting history, interests, and trending activity</p>
+                  </div>
+                </div>
+                <button className="refresh-recs-btn" onClick={fetchRecommendations} disabled={recsLoading}>
+                  <Zap size={14} /> {recsLoading ? 'Analyzing...' : 'Refresh'}
+                </button>
+              </div>
+
+              {recsLoading ? (
+                <div className="ai-recs-loading">
+                  <div className="ai-recs-spinner"></div>
+                  <p>Running ML recommendation engine...</p>
+                  <small>Analyzing collaborative filtering & content matching</small>
+                </div>
+              ) : recommendations.length === 0 ? (
+                <div className="ai-recs-empty">
+                  <div className="ai-recs-empty-icon">🤖</div>
+                  <h4>No Recommendations Yet</h4>
+                  <p>Vote in more polls to help the ML engine learn your preferences. The more you vote, the smarter it gets!</p>
+                </div>
+              ) : (
+                <div className="recs-grid">
+                  {recommendations.map((rec, idx) => {
+                    const poll = rec.poll;
+                    const hasVoted = votedPolls.some(v => v.pollId?._id === poll._id || v.pollId === poll._id);
+
+                    return (
+                      <div key={poll._id} className="rec-card" style={{ animationDelay: `${idx * 0.08}s` }}>
+                        <div className="rec-card-top">
+                          <div className="rec-match-score">
+                            <div className="match-ring">
+                              <svg viewBox="0 0 36 36" className="match-svg">
+                                <path className="match-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                <path className="match-fg" strokeDasharray={`${rec.matchScore}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                              </svg>
+                              <span className="match-num">{rec.matchScore}%</span>
+                            </div>
+                            <span className="match-label">Match</span>
+                          </div>
+                          <div className="rec-poll-info">
+                            <span className="rec-category">{poll.category || 'General'}</span>
+                            <h4>{poll.title}</h4>
+                            <p>{poll.description?.substring(0, 80)}{poll.description?.length > 80 ? '...' : ''}</p>
+                          </div>
+                        </div>
+
+                        <div className="rec-reasons">
+                          {rec.reasons.map((reason, ri) => (
+                            <span key={ri} className="reason-tag">{reason}</span>
+                          ))}
+                        </div>
+
+                        <div className="rec-card-bottom">
+                          <div className="rec-meta">
+                            <span>By {poll.createdBy?.name || 'Staff'}</span>
+                            <span>Ends {new Date(poll.endTime).toLocaleDateString()}</span>
+                          </div>
+                          {!hasVoted ? (
+                            <button className="rec-vote-btn" onClick={() => { setActiveTab('polls'); }}>
+                              Vote Now →
+                            </button>
+                          ) : (
+                            <span className="rec-voted-badge">✓ Already Voted</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ML Algorithm Info */}
+              <div className="ml-info-bar">
+                <span>🧪 Powered by: Collaborative Filtering • Content-Based Matching • TF-IDF • Cosine Similarity</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -325,8 +436,8 @@ const StatCard = ({ title, value, icon }) => (
   </div>
 );
 
-const TabButton = ({ label, active, onClick }) => (
-  <button className={`tab-btn ${active ? "active" : ""}`} onClick={onClick}>{label}</button>
+const TabButton = ({ label, active, onClick, isSpecial }) => (
+  <button className={`tab-btn ${active ? "active" : ""} ${isSpecial ? "special-tab" : ""}`} onClick={onClick}>{label}</button>
 );
 
 export default Student;
